@@ -3,7 +3,7 @@
 
 void main() {
     clear_screen();
-    char* message = "Have good sex idiot!";
+    char* message = "Test scrolling, kprint and kscroll functions";
     k_print_at(message, 0, 0);
     k_print_at(message, 24, 0);
     k_print_at(message, 24, 75);
