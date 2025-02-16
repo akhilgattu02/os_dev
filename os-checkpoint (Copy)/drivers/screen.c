@@ -74,8 +74,13 @@ void k_print_at(char* message, int x, int y)
         {
 		if(i > (2 * MAX_ROWS * MAX_COLS) - 2)
 		{
-			vga[2 * MAX_ROWS * MAX_COLS - 2] = 'E';
-                        vga[2 * MAX_ROWS * MAX_COLS - 1] = 0xf4;
+			//vga[2 * MAX_ROWS * MAX_COLS - 2] = 'E';
+                        //vga[2 * MAX_ROWS * MAX_COLS - 1] = 0xf4;
+			scroll_screen();
+			char* init = &message[0];
+			char* new_msg = (init + ((i-2*position)/2));
+			k_print_at(new_msg, MAX_ROWS - 1, 0);
+			break;
 		}
                 vga[i] = message[(i-2*position)/2];
                 vga[i+1] = 0x0f;
@@ -105,7 +110,7 @@ void scroll_screen()
 	for(int col = 0; col < MAX_COLS; col++)
 	{
 		int index = (MAX_ROWS-1) * (MAX_COLS) + col;
-		vga[2 * index] = ' ';
+		vga[2 * index] = '#';
 		vga[2 * (index+1)] = 0x0f;
 	}
 }
