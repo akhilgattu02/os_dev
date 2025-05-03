@@ -26,5 +26,15 @@ void int_to_ascii(int n, char str[]) {
     if (sign < 0) str[i++] = '-';
     str[i] = '\0';
 
+    int start = 0;
+    int end = i - 1;
+    while(start < end)
+    {
+        char temp = str[end];
+        str[end] = str[start];
+        str[start] = temp;
+        start += 1;
+        end -= 1;
+    }
     /* TODO: implement "reverse" */
 }
