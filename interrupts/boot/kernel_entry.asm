@@ -1,4 +1,4 @@
 [bits 32]
-[extern main] ; Must have same name as kernel.c 'main' function
-call main ; Calls the C function
+[extern kernel_main] ; Must have same name as kernel.c 'main' function
+call kernel_main ; Calls the C function
 jmp $

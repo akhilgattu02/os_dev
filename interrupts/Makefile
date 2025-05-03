@@ -1,44 +1,46 @@
-# Get all source files
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h)
-
-# Convert source files to object files
+# Nice syntax for file extension replacement
 OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o} 
 
-# Final OS binary
+# Change this if your cross-compiler is somewhere else
+CC = /usr/local/i386elfgcc/bin/i386-elf-gcc
+GDB = /usr/local/i386elfgcc/bin/i386-elf-gdb
+# -g: Use debugging symbols in gcc
+CFLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
+
+# First rule is run by default
 os-image.bin: boot/bootsect.bin kernel.bin
 	cat $^ > os-image.bin
 
-# Kernel binary (flat binary format)
+# '--oformat binary' deletes all symbols as a collateral, so we don't need
+# to 'strip' them manually on this case
 kernel.bin: boot/kernel_entry.o ${OBJ}
-	ld -m elf_i386 -T linker.ld -o $@ $^ --oformat binary
+	i386-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
 
-# Kernel ELF (for debugging)
+# Used for debugging purposes
 kernel.elf: boot/kernel_entry.o ${OBJ}
-	ld -m elf_i386 -T linker.ld -o $@
+	i386-elf-ld -o $@ -Ttext 0x1000 $^ 
 
-# Compile C files
-%.o : %.c ${HEADERS}
-	gcc -g -m32 -ffreestanding -fno-pic -fno-stack-protector -c $< -o $@
-
-# Compile Assembly files
-%.o : %.asm
-	nasm -f elf32 $< -o $@
-
-# Assemble bootloader and other raw binary files
-%.bin : %.asm
-	nasm -f bin $< -o $@
-
-# Run in QEMU
 run: os-image.bin
-	qemu-system-i386 -no-reboot -fda os-image.bin
+	qemu-system-i386 -fda os-image.bin
 
-# Debug in QEMU with GDB
+# Open the connection to qemu and load our kernel-object file with symbols
 debug: os-image.bin kernel.elf
-	qemu-system-i386 -s -S -fda os-image.bin &
-	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+	qemu-system-i386 -s -fda os-image.bin -d guest_errors,int &
+	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
-# Clean build files
+# Generic rules for wildcards
+# To make an object, always compile from its .c
+%.o: %.c ${HEADERS}
+	${CC} ${CFLAGS} -c $< -o $@
+
+%.o: %.asm
+	nasm $< -f elf -o $@
+
+%.bin: %.asm
+	nasm $< -f bin -o $@
+
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o
+	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
