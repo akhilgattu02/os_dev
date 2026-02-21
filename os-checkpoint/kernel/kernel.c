@@ -1,10 +1,35 @@
+#include "../cpu/isr.h"
 #include "../drivers/screen.h"
+#include "kernel.h"
+#include "../libc/string.h"
+#include "../libc/mem.h"
 
 void main() {
-    clear_screen();
-    kprint_at("X", 0, 0);
-    kprint_at("This text spans multiple lines", 75, 10);
-    kprint_at("This is a line\nbreak", 0, 20);
-    kprint("There is a line break");
-    kprint_at("What happens when we run out of space?", 45, 24);
+    isr_install();
+    irq_install();
+
+    kprint("Welcome to the kernel!\n");
+}
+
+void user_input(char* input)
+{
+    if(strcmp(input, "END") == 0){
+        kprint("Stopping the CPU. Bye!\n");
+        asm volatile("hlt");
+    } else if (strcmp(input, "PAGE") == 0){
+        u32 phys_addr;
+        u32 page = kmalloc(1000, 1, &phys_addr);
+        char page_str[16] = "";
+        hex_to_ascii(page, page_str);
+        char phys_str[16] = "";
+        hex_to_ascii(phys_addr, phys_str);
+        kprint("Page: ");
+        kprint(page_str);
+        kprint("\nPhysical address: ");
+        kprint(phys_str);
+        kprint("\n");
+    }
+    kprint("You said: ");
+    kprint(input);
+    kprint("\n> ");
 }

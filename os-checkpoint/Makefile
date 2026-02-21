@@ -1,8 +1,8 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
-HEADERS = $(wildcard kernel/*.h drivers/*.h)
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
+HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h)
 
 # Nice syntax for file extension replacement
-OBJ = ${C_SOURCES:.c=.o}
+OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o}
 
 os-image.bin: boot/bootsect.bin kernel.bin
 	cat $^ > os-image.bin
@@ -14,7 +14,7 @@ kernel.elf: boot/kernel_entry.o ${OBJ}
 	ld -m elf_i386 -T linker.ld -o $@ $^
 
 %.o : %.c ${HEADERS}
-	gcc -g -m32 -fno-pic -c $< -o $@
+	gcc -g -m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -c $< -o $@
 
 %.o : %.asm
 	nasm -f elf32 $< -o $@
@@ -32,6 +32,6 @@ debug: os-image.bin kernel.elf
 
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o
+	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
 
 
