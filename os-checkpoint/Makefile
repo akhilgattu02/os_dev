@@ -34,4 +34,9 @@ clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
 	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
 
+commit:
+	git add .
+	git commit 
+	git push origin
+
 
