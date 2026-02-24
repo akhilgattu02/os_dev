@@ -13,6 +13,7 @@
 #define REG_SCREEN_DATA 0x3D5
 
 void clear_screen();
+void scroll_screen();
 void kprint_at(char *message, int col, int row);
 void kprint(char *message);
 void kprint_backspace();

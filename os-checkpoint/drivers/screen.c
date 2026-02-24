@@ -68,22 +68,36 @@ int print_char(char c, int col, int row, char attr){
 	}
 
 	if (offset >= MAX_ROWS * MAX_COLS * 2) {
-        int i;
-        for (i = 1; i < MAX_ROWS; i++) 
-            memory_copy((u8*)(get_offset(0, i) + VIDEO_ADDRESS),
-                        (u8*)(get_offset(0, i-1) + VIDEO_ADDRESS),
-                        MAX_COLS * 2);
-
-        /* Blank last line */
-        char *last_line = (char*) (get_offset(0, MAX_ROWS-1) + (u8*) VIDEO_ADDRESS);
-        for (i = 0; i < MAX_COLS * 2; i++) last_line[i] = 0;
-
-        offset -= 2 * MAX_COLS;
+        scroll_screen();
     }
 
     set_cursor_offset(offset);
     return offset;
 
+}
+
+void scroll_screen() {
+    u8 *vidmem = (u8*) VIDEO_ADDRESS;
+    int i;
+
+    /* Move every line one row up */
+    for (i = 1; i < MAX_ROWS; i++) {
+        memory_copy(
+            (u8*)(vidmem + get_offset(i, 0)),        // source (current row)
+            (u8*)(vidmem + get_offset(i - 1, 0)),    // destination (previous row)
+            MAX_COLS * 2                             // entire row (char + attr)
+        );
+    }
+
+    /* Clear last line */
+    int last_line_offset = get_offset(MAX_ROWS - 1, 0);
+    for (i = 0; i < MAX_COLS; i++) {
+        vidmem[last_line_offset + (i * 2)] = ' ';
+        vidmem[last_line_offset + (i * 2) + 1] = WHITE_ON_BLACK;
+    }
+
+    /* Move cursor to beginning of last line */
+    set_cursor_offset(last_line_offset);
 }
 
 int get_cursor_offset() {
