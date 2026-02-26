@@ -8,6 +8,8 @@
 
 #define BACKSPACE 0x0E
 #define ENTER 0x1C
+#define LSHIFT 0x2A
+#define RSHIFT 0x36
 
 static char key_buffer[256];
 
@@ -27,7 +29,6 @@ const char sc_ascii[] = { '?', '?', '1', '2', '3', '4', '5', '6',
 static void keyboard_callback(registers_t regs){
 
     u8 scancode = port_byte_in(0x60);
-
     if (scancode > SC_MAX) return;
     if (scancode == BACKSPACE) {
         backspace(key_buffer);
@@ -36,7 +37,10 @@ static void keyboard_callback(registers_t regs){
         kprint("\n");
         user_input(key_buffer);
         key_buffer[0] = '\0';
-    } else {
+    } else if (scancode == LSHIFT || scancode == RSHIFT) {
+        kprint("SHIFT pressed\n");
+    }
+    else {
         char letter = sc_ascii[(int)scancode];
         char str[2] = {letter, '\0'};
         append(key_buffer, letter);

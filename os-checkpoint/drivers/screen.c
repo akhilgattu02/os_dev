@@ -69,6 +69,7 @@ int print_char(char c, int col, int row, char attr){
 
 	if (offset >= MAX_ROWS * MAX_COLS * 2) {
         scroll_screen();
+		offset = get_offset(MAX_ROWS - 1, 0);
     }
 
     set_cursor_offset(offset);

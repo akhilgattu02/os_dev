@@ -22,7 +22,7 @@ u32 free_mem_addr = 0x1000;
 
 u32 kmalloc(u32 size, int align, u32 *phys_addr)
 {
-    if (align == 1 && (free_mem_addr & 0xFFFFF000)) {
+    if (align == 1 && (free_mem_addr & 0xFFF)) {
         free_mem_addr &= 0xFFFFF000;
         free_mem_addr += 0x1000;
     }
